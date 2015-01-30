@@ -8,7 +8,7 @@
     <key>CFBundleIconFile</key>
     <string></string>
     <key>CFBundleIdentifier</key>
-    <string>com.yourcompany.PhaserWah</string>
+    <string>edu.DOA.PhaserWah</string>
     <key>CFBundleName</key>
     <string>PhaserWah</string>
     <key>CFBundlePackageType</key>
@@ -27,13 +27,13 @@
     <array>
       <dict>
         <key>name</key>
-        <string>yourcompany: PhaserWah</string>
+        <string>DOA: PhaserWah</string>
         <key>description</key>
         <string>PhaserWah</string>
         <key>factoryFunction</key>
         <string>PhaserWahAUFactory</string>
         <key>manufacturer</key>
-        <string>Manu</string>
+        <string>DOA</string>
         <key>type</key>
         <string>aufx</string>
         <key>subtype</key>

@@ -16,11 +16,16 @@
 PhaserWahAudioProcessor::PhaserWahAudioProcessor()
 {
     for(int i = 0; i < NUM_BANDS; i++) {
-        freq[i] = 200 * (i + 1);
-        modfreq = 200;
-        moddepth = 1;
-        n[i].freq(freq[i]);
+        freq[i] = 800 * (i * i + 1);
+        bandwidth[i] = 0.5;
+        updateFilter(i);
     }
+    modfreq = 20;
+    moddepth = 0.5;
+    mix = 0.5;
+    modulator.freq(modfreq);
+    modulator.ampPhase(moddepth, 0.0);
+    sr = 0;
 }
 
 PhaserWahAudioProcessor::~PhaserWahAudioProcessor()
@@ -74,37 +79,43 @@ void PhaserWahAudioProcessor::setParameter (int index, float newValue)
     switch(p) {
     case BAND_FREQ1:
         freq[0] = newValue;
+        updateFilter(0);
         break;
     case BAND_WIDTH1:
         bandwidth[0] = newValue;
-        n[0].width(newValue*freq[0]);
+        updateFilter(0);
         break;
     case BAND_FREQ2:
         freq[1] = newValue;
+        updateFilter(1);
         break;
     case BAND_WIDTH2:
         bandwidth[1] = newValue;
-        n[1].width(newValue*freq[1]);
+        updateFilter(1);
         break;
     case BAND_FREQ3:
         freq[2] = newValue;
+        updateFilter(2);
         break;
     case BAND_WIDTH3:
         bandwidth[2] = newValue;
-        n[2].width(newValue*freq[2]);
+        updateFilter(2);
         break;
     case BAND_FREQ4:
         freq[3] = newValue;
+        updateFilter(3);
         break;
     case BAND_WIDTH4:
         bandwidth[3] = newValue;
-        n[3].width(newValue*freq[3]);
+        updateFilter(3);
         break;
     case MOD_DEPTH:
         moddepth = newValue;
+        modulator.ampPhase(newValue, modulator.phase());
         break;
     case MOD_FREQ:
         modfreq = newValue;
+        modulator.freq(newValue);
         break;
     case MIX:
         mix = newValue;
@@ -268,8 +279,10 @@ void PhaserWahAudioProcessor::changeProgramName (int index, const String& newNam
 //==============================================================================
 void PhaserWahAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    Domain::master().spu(sampleRate);
-    modulator.freq(modfreq);
+    if(sr != sampleRate){
+        sr = sampleRate;
+        Domain::master().spu(sr);
+    }
 }
 
 void PhaserWahAudioProcessor::releaseResources()
@@ -288,21 +301,19 @@ void PhaserWahAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
     // this code if your algorithm already fills all the output channels.
     for (int i = getNumInputChannels(); i < getNumOutputChannels(); ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
-
+    float scaleFactor = 1.0 / NUM_BANDS;
     // This is the place where you'd normally do the guts of your plugin's
     // audio processing...
-    for (int channel = 0; channel < getNumInputChannels(); ++channel)
+    for (int channel = 0; channel < 1/*getNumInputChannels()*/; ++channel)
     {
         float* outbuf = buffer.getWritePointer (channel);
         const float* inbuf = buffer.getReadPointer (channel);
-        modulator.freq(modfreq);
-        float modsamp = modulator();
 
         for (int samp = 0; samp < buffer.getNumSamples(); samp++) {
             float filtered = 0;
             for (int i = 0; i < NUM_BANDS; i++) {
-                n[i].freq(freq[i] * (1 + modsamp * moddepth)); //set freq for each filter
-                filtered += n[i](*inbuf);
+                n[i].freq(freq[i] * (1 + modulator() * moddepth)); //set freq for each filter
+                filtered += n[i](*inbuf) * scaleFactor;
             }
             *outbuf++ = (mix * filtered) + (1 - mix) * *inbuf++;
         }
@@ -339,4 +350,11 @@ void PhaserWahAudioProcessor::setStateInformation (const void* data, int sizeInB
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new PhaserWahAudioProcessor();
+}
+
+//==============================================================================
+// Updates filter freq and bandwidth, as bandwidth depends on freq
+void PhaserWahAudioProcessor::updateFilter(const int filterID){
+    n[filterID].freq(freq[filterID]);
+    n[filterID].width(bandwidth[filterID] * calcMaxBandwidth(freq[filterID]));
 }

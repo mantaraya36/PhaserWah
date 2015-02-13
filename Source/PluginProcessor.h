@@ -87,13 +87,20 @@ public:
     } PARAMS;
 private:
 
+    float sr;
     float mix;
     float freq[NUM_BANDS];
     float bandwidth[NUM_BANDS];
+
     float modfreq, moddepth;
-    Notch<> n[NUM_BANDS];
+    Reson<> n[NUM_BANDS];
     SineR<> modulator;
 
+    inline float calcMaxBandwidth(const float f){
+        return 2 * f / log(f + 0.001);
+    };
+    
+    void updateFilter(const int filterID);
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PhaserWahAudioProcessor)
 };

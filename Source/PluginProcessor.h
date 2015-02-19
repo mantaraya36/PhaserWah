@@ -96,6 +96,9 @@ private:
     Reson<> n[NUM_BANDS];
     SineR<> modulator;
 
+    const int freqIDs[NUM_BANDS] = {BAND_FREQ1, BAND_FREQ2, BAND_FREQ3, BAND_FREQ4};
+    const int widthIDs[NUM_BANDS] = {BAND_WIDTH1, BAND_WIDTH2, BAND_WIDTH3, BAND_WIDTH4};
+    
     inline float calcMaxBandwidth(const float f){
         return 2 * f / log(f + 0.001);
     };

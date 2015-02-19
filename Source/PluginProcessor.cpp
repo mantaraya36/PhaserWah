@@ -16,15 +16,20 @@
 PhaserWahAudioProcessor::PhaserWahAudioProcessor()
 {
     for(int i = 0; i < NUM_BANDS; i++) {
-        freq[i] = 800 * (i * i + 1);
-        bandwidth[i] = 0.5;
-        updateFilter(i);
+        //freq[i] = 800 * (i * i + 1);
+        setParameterNotifyingHost(freqIDs[i], 800 * (i * i + 1));
+        setParameterNotifyingHost(widthIDs[i], 0.5);
+        //        bandwidth[i] = 0.5;
+        //updateFilter(i);
     }
     modfreq = 20;
     moddepth = 0.5;
     mix = 0.5;
-    modulator.freq(modfreq);
-    modulator.ampPhase(moddepth, 0.0);
+    setParameterNotifyingHost(MOD_DEPTH, moddepth);
+    setParameterNotifyingHost(MOD_FREQ, modfreq);
+    setParameterNotifyingHost(MIX, mix);
+//    modulator.freq(modfreq);
+//    modulator.ampPhase(moddepth, 0.0);
     sr = 0;
 }
 
@@ -154,7 +159,7 @@ const String PhaserWahAudioProcessor::getParameterName (int index)
     case MOD_DEPTH:
         name = "Modulation depth";
     case MOD_FREQ:
-        name = "Modulation depth";
+        name = "Modulation frequency";
         break;
     case MIX:
         name = "Mix";
@@ -301,7 +306,7 @@ void PhaserWahAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
     // this code if your algorithm already fills all the output channels.
     for (int i = getNumInputChannels(); i < getNumOutputChannels(); ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
-    float scaleFactor = 1.0 / NUM_BANDS;
+    // float scaleFactor = 1.0 / NUM_BANDS;
     // This is the place where you'd normally do the guts of your plugin's
     // audio processing...
     for (int channel = 0; channel < 1/*getNumInputChannels()*/; ++channel)
@@ -310,10 +315,10 @@ void PhaserWahAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
         const float* inbuf = buffer.getReadPointer (channel);
 
         for (int samp = 0; samp < buffer.getNumSamples(); samp++) {
-            float filtered = 0;
+            float filtered = *inbuf;
             for (int i = 0; i < NUM_BANDS; i++) {
                 n[i].freq(freq[i] * (1 + modulator() * moddepth)); //set freq for each filter
-                filtered += n[i](*inbuf) * scaleFactor;
+                filtered = n[i](filtered);
             }
             *outbuf++ = (mix * filtered) + (1 - mix) * *inbuf++;
         }

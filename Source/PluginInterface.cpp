@@ -87,7 +87,7 @@ PluginInterface::PluginInterface (PhaserWahAudioProcessor& p)
     label4->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (mix = new Slider ("new slider"));
-    mix->setRange (0, 10, 0);
+    mix->setRange (0, 1, 0);
     mix->setSliderStyle (Slider::Rotary);
     mix->setTextBoxStyle (Slider::NoTextBox, false, 80, 20);
     mix->addListener (this);
@@ -421,7 +421,7 @@ BEGIN_JUCER_METADATA
          focusDiscardsChanges="0" fontname="Default font" fontsize="15"
          bold="0" italic="0" justification="36"/>
   <SLIDER name="new slider" id="eb5c080c6c96c98c" memberName="mix" virtualName=""
-          explicitFocusOrder="0" pos="216 208 64 64" min="0" max="10" int="0"
+          explicitFocusOrder="0" pos="216 208 64 64" min="0" max="1" int="0"
           style="Rotary" textBoxPos="NoTextBox" textBoxEditable="1" textBoxWidth="80"
           textBoxHeight="20" skewFactor="1"/>
   <LABEL name="new label" id="4424775d4d900f55" memberName="label5" virtualName=""
